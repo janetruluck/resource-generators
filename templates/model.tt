@@ -1,0 +1,78 @@
+# app/models/<%= safe_name %>.rb
+class <%= class_name %> < ActiveRecord::Base 
+  <%- if options[:with_entity] -%> 
+  class Entity < Grape::Entity 
+    format_with(:iso_timestamp) { |dt| dt.iso8601 }
+
+    expose :id
+    <%- if options[:public_attributes] -%>
+    <%- options[:public_attributes].each do |x| -%>
+    <%- attribute = x.split(":")[1] -%>
+    expose :<%= attribute.downcase.underscore %>
+    <%- end -%>
+    <%- end -%>
+    <%- if options[:admin_attributes] -%>
+    <%- options[:admin_attributes].each do |x| -%>
+    <%- attribute = x.split(":")[1] -%>
+    expose :<%= attribute.downcase.underscore %>
+    <%- end -%>
+    <%- end -%>
+
+    with_options(format_with: :iso_timestamp) do
+      expose :created_at
+      expose :updated_at
+    end
+  end
+  <%- end -%>
+
+  <%- public_attrs = options[:public_attributes] ? options[:public_attributes].collect {|x| attribute = x.split(":")[1]; attribute.parameterize.underscore.to_sym } : [] -%>
+  <%- relational_attrs = options[:belongs_to] ? options[:belongs_to].collect {|x| "#{x}_id".parameterize.underscore.to_sym } : [] -%>
+  public_attributes = <%= relational_attrs + public_attrs %> 
+  admin_attributes  = <%= options[:admin_attributes] ? options[:admin_attributes].collect {|x| attribute = x.split(":")[1]; attribute.parameterize.underscore.to_sym } : [] %>
+
+  attr_accessible *public_attributes
+  attr_accessible *(public_attributes + admin_attributes), as: :admin
+
+  # Validations
+  <%- if options[:belongs_to] %>
+  validates_presence_of   <%= options[:belongs_to].collect{|x| "#{x.underscore}_id".to_sym.inspect }.join(", ") if options[:belongs_to]  %>
+  <%- end -%>
+  <%- if options[:validate_presence] %>
+  validates_presence_of   <%= options[:validate_presence].collect{|x| x.underscore.to_sym.inspect }.join(", ") if options[:validate_presence]  %>
+  <%- end -%>
+  <%- if options[:validate_unique] %>
+  validates_uniqueness_of <%= options[:validate_unique].collect{|x| x.underscore.to_sym.inspect }.join(", ") if options[:validate_unique]  %>
+  <%- end -%>
+
+  # Associations
+  <%- if options[:belongs_to] -%>
+  <%- options[:belongs_to].each do |item| -%>
+  belongs_to :<%= item.downcase.underscore %>
+  <%- end -%>
+  <%- end -%>
+  <%- if options[:has_one] -%>
+  <%- options[:has_one].each do |item| -%>
+  has_one    :<%= item.downcase.underscore %>
+  <%- end -%>
+  <%- end -%>
+  <%- if options[:has_many] -%>
+  <%- options[:has_many].each do |item| -%>
+  has_many   :<%= item.pluralize.downcase.underscore %>
+  <%- end -%>
+  <%- end -%>
+  <%- if options[:has_many_through] -%>
+  <%- options[:has_many_through].each do |item| -%>
+  <%- relationship, through = item.split(":") -%>
+  has_many   :<%= relationship.pluralize.downcase.underscore %>, through: :<%= through.pluralize.downcase.underscore %>
+  <%- end -%>
+  <%- end -%>
+
+  # Scopes
+  default_scope { order(:updated_at) }
+
+  # Add ons
+  <%= "has_paper_trail class_name: \"#{class_name}Version\" " if options[:paper_trail] %>
+  <%- if options[:acts_as_list] -%>
+  acts_as_list scope: <%= options[:acts_as_list].collect {|x| x.underscore.to_sym.inspect }.join(", ") %>
+  <%- end -%>
+end

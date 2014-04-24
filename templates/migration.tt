@@ -1,0 +1,33 @@
+# db/migrate/<%= @timestamp %>_<%= safe_name %>.rb
+class <%= class_name %> < ActiveRecord::Migration
+  def self.up
+    <%- if options[:use_uuid] -%>
+    execute 'CREATE TABLE <%= safe_name.pluralize %> (id uuid PRIMARY KEY DEFAULT uuid_generate_v4());' 
+    change_table :<%= safe_name.pluralize %> do |t|
+    <%- else -%>
+    create_table :<%= safe_name.pluralize %> do |t|
+    <%- end -%>
+      <%- if options[:belongs_to] -%>
+      <%- options[:belongs_to].each do |x| -%>
+      t.uuid :<%= x.downcase.underscore %>_id, null: false
+      <%- end -%>
+      <%- end -%>
+
+      <%= parse_attributes_for_migration(options[:public_attributes]) if options[:public_attributes] %>
+      <%= parse_attributes_for_migration(options[:admin_attributes]) if options[:admin_attributes] %>
+      <%= parse_attributes_for_migration(options[:other_attributes]) if options[:other_attributes] %>
+
+      <%- if options[:acts_as_list] -%>
+      <%- options[:acts_as_list].each do |x| -%>
+      t.integer :position, null: false
+      <%- end -%>
+      <%- end -%>
+
+      t.timestamps
+    end
+  end
+
+  def self.down
+    drop_table :<%= safe_name.pluralize %>
+  end
+end

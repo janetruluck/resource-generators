@@ -1,0 +1,73 @@
+# spec/models/<%= safe_name %>_spec.rb
+require "spec_helper"
+
+describe <%= class_name %> do
+  describe "accessible attributes" do
+    <%- if options[:belongs_to] -%>
+    <%- options[:belongs_to].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to allow_mass_assignment_of(:<%= x.downcase.underscore %>_id) }
+    <%- end -%>
+    <%- end -%>
+    <%- if options[:public_attributes] -%>
+    <%- options[:public_attributes].each do |x| -%>
+    <%- type, attribute = x.split(":") -%>
+    it { expect(build(:<%= safe_name %>)).to allow_mass_assignment_of(:<%= attribute.downcase.underscore %>) }
+    <%- end -%>
+    <%- end -%>
+
+    context "as administrator" do
+      <%- if options[:admin_attributes] -%>
+      <%- options[:admin_attributes].each do |x| -%>
+      <%- attribute = x.split(":")[1] -%>
+      it { expect(build(:<%= safe_name %>)).to allow_mass_assignment_of(:<%= attribute.downcase.underscore %>).as_admin }
+      <%- end -%>
+      <%- end -%>
+    end
+  end
+
+  describe "validations" do
+    <%- if options[:belongs_to] -%>
+    <%- options[:belongs_to].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to validate_presence_of(:<%= x.downcase.underscore %>_id) }
+    <%- end -%>
+    <%- end -%>
+    <%- if options[:validate_presence] -%>
+    <%- options[:validate_presence].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to validate_presence_of(:<%= x.downcase.underscore %>) }
+    <%- end -%>
+    <%- end -%>
+    <%- if options[:validate_unique] -%>
+    
+    <%- options[:validate_unique].each do |x| -%>
+    it { expect(create(:<%= safe_name %>)).to validate_uniqueness_of(:<%= x.downcase.underscore %>) }
+    <%- end -%>
+    <%- end -%>
+  end
+
+  describe "relationships" do
+    <%- if options[:belongs_to] -%>
+    <%- options[:belongs_to].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to belong_to(:<%= x.downcase.underscore %>) }
+    <%- end -%>
+    <%- end -%>
+
+    <%- if options[:has_one] -%>
+    <%- options[:has_one].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to have_one(:<%= x.downcase.underscore %>).dependent(:destroy) }
+    <%- end -%>
+    <%- end -%>
+
+    <%- if options[:has_many] -%>
+    <%- options[:has_many].each do |x| -%>
+    it { expect(build(:<%= safe_name %>)).to have_many(:<%= x.downcase.underscore %>).dependent(:destroy) }
+    <%- end -%>
+    <%- end -%>
+
+    <%- if options[:has_many_through] -%>
+    <%- options[:has_many_through].each do |x| -%>
+    <%- resource, through = x.split(":") -%>
+    it { expect(build(:<%= safe_name %>)).to have_many(:<%= resource.downcase.pluralize.underscore %>).through(:<%= through.pluralize.downcase.underscore %>) }
+    <%- end -%>
+    <%- end -%>
+  end
+end

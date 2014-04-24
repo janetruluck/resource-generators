@@ -1,0 +1,5 @@
+# app/models/<%= safe_name %>_version.rb
+class <%= class_name %>Version < PaperTrail::Version
+  self.table_name    = :<%= "#{safe_name}_versions" %>
+  self.sequence_name = :<%= "#{safe_name}_version_id_seq" %>
+end

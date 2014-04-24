@@ -1,0 +1,18 @@
+# spec/factories/<%= safe_name %>_factory.rb
+FactoryGirl.define do
+  factory :<%= safe_name %> do
+    # References
+    <%- if options[:belongs_to] -%>
+    <%- options[:belongs_to].each do |item| -%>
+    <%= item.downcase.underscore %>
+    <%- end -%>
+    <%- end -%>
+
+    # Public Attributes
+    <%= parse_attributes_for_factory(options[:public_attributes]) %>
+    # Admin Attributes
+    <%= parse_attributes_for_factory(options[:admin_attributes]) %>
+    # Other Attributes
+    <%= parse_attributes_for_factory(options[:other_attributes]) %>
+  end
+end

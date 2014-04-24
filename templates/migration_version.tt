@@ -1,0 +1,23 @@
+# db/migrate/<%= @timestamp %>_<%= safe_name %>_version.rb
+class <%= class_name %>Versions < ActiveRecord::Migration
+  def self.up
+    create_table :<%= "#{safe_name}_versions" %> do |t|
+      t.string   :item_type, :null => false
+      <%- if options[:use_uuid] -%>
+      t.uuid     :item_id,   :null => false
+      <%- else -%>
+      t.integer  :item_id,   :null => false
+      <%- end -%>
+      t.string   :event,     :null => false
+      t.string   :whodunnit
+      t.text     :object
+      t.datetime :created_at
+    end
+    add_index :<%= "#{safe_name}_versions" %>, [:item_type, :item_id]
+  end
+
+  def self.down
+    remove_index :<%= "#{safe_name}_versions" %>, [:item_type, :item_id]
+    drop_table :<%= "#{safe_name}_versions" %>
+  end
+end
